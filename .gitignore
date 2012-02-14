@@ -1,0 +1,10 @@
+#*
+*~
+*.egg-info
+*.pyc
+/.coverage
+/dist
+*_flymake.py
+*#*
+.DS_Store
+*(Autosaved).graffle
