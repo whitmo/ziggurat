@@ -2,7 +2,14 @@ from setuptools import find_packages
 from setuptools import setup
 
 version = '0.0'
-requires = ['pyzmq', 'gservice', 'geventutil', 'path.py']
+requires = [
+    'pyzmq', 
+    'gservice', 
+    'geventutil', 
+    'pyramid', 
+    'ZMQTxn',  
+    'path.py'
+    ]
 
 setup(name='ziggurat',
       version=version,
@@ -12,7 +19,7 @@ setup(name='ziggurat',
       keywords='pyramid networking zeromq gevent fapp fapp fapp',
       author='whitmo',
       author_email='whit at surveymonkey.com',
-      url='',
+      url='http://ziggurat.github.com',
       license='BSD',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
