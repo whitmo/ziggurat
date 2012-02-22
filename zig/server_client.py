@@ -1,60 +1,6 @@
-from functools import partial
 from gevent_zeromq import zmq
-from zig.config.register import scan
-from zig.utils import coro
 import gevent
 import zig
-
-
-# class RRClient(object):
-#     def __init__(self, address, callback=None, context=None):
-#         self.context = context or zig.Context()
-#         self.address = address
-#         self.callback = callback
-#         self.coro = None
-
-#     @coro
-#     def asker(self):
-#         """
-#         make requests of a 0mq service at {address}
-#         """
-#         socket = self.client_socket = self.context.socket(zmq.REQ)
-#         socket.connect(self.address)
-#         callback = None
-#         while True:
-#             payload = (yield)
-#             if len(payload) == 2:
-#                 payload, callback = payload
-#             callback = callback or self.callback
-#             socket.send_json(payload)
-#             resp = socket.recv_json()
-#             if not callback is None:
-#                 callback((self, resp))
-
-#     def send(self, payload, callback=None, retvalue=False):
-#         if self.coro is None:
-#             self.coro = self.asker()
-#         if callback is None:
-#             return self.coro.send((payload,))
-#         return self.coro.send((payload, callback))
-
-
-class ServerHandler(object):
-    scan = staticmethod(scan)
-
-    def __init__(self, server, dispatcher=None, registry=None):
-        self.server = server
-        self.dispatcher = dispatcher
-        self.registry = registry
-
-    def __call__(self, payload):
-        out = self.dispatcher(payload, self.registry)
-        self.server.socket.send_json(out)
-
-    @classmethod
-    def from_spec(cls, spec, registry):
-        dispatcher = cls.scan(spec)
-        return partial(cls, dispatcher=dispatcher, registry=registry)
 
 
 class RepServer(object):
