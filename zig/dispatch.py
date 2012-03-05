@@ -1,4 +1,5 @@
 from .interfaces import IActionRegistry
+from .interfaces import IReceptionRegistry
 from pyramid.decorator import reify
 from zope.interface import implementer
 import logging
@@ -73,4 +74,11 @@ class ActionRegistry(dict):
     def __call__(self, send, payload):
         out = self.dispatch(payload)
         send(out)
+        return out
+
+
+@implementer(IReceptionRegistry)
+class ReceptionRegistry(ActionRegistry):
+    def __call__(self, payload):
+        out = self.dispatch(payload)
         return out
