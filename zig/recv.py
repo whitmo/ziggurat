@@ -9,6 +9,7 @@ class Receiver(object):
     for listening on a SUB or PULL socket
     """
     def __init__(self, recv, handler=None, wait=0.1):
+        self.wait = wait
         self.handler = self.default_handler
         if not self.handler is None:
             self.handler = handler
