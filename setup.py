@@ -7,7 +7,7 @@ requires = [
     'gservice', 
     'geventutil', 
     'pyramid', 
-    'ZMQTxn',  
+    #'ZMQTxn',  
     'path.py'
     ]
 
@@ -28,5 +28,7 @@ setup(name='ziggurat',
       entry_points="""
       [paste.server_factory]
       gpds=zig.service:GPasteDeployService
+      [console_scripts]
+      gpserve = zig.greenpserve:gpserve
       """,
       )
