@@ -36,7 +36,6 @@ class NoActionError(ValueError):
     No action found for the payload
     """
 
-
 @implementer(IActionRegistry)
 class ActionRegistry(dict):
 
