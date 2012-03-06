@@ -90,8 +90,8 @@ class SimpleRRClient(object):
 
 class endpoint(object):
     """
-    Represents an address that on which one may make non-lingering
-    `requests`
+    Represents an address that one may make non-lingering
+    `requests` on a remote address
     """
     def __init__(self, address, ctx=None, timeout=3*1000):
         ctx = self.context = ctx or zig.CTX()
@@ -116,6 +116,7 @@ class endpoint(object):
                 reply = None
             self.poll.unregister(client)
         return reply
+
 
 class json_endpoint(endpoint):
     #@@ add validation ??
@@ -150,25 +151,3 @@ def spawn_queue(front, back):
 
 
 
-"""
-> doula has a dealer for all bambinos
-> b registers identity with doula
-> doula uses identity to route messages to b 
-"""
-
-"""
-doula binds rep 6968
-doula binds a router-dealer queue
-doula binds publisher to 6967
-inproc:doula -> tcp://*:6969
-
-clients
- bind REQ to 6968
- bind REP to 6969 w/ identity
- bind SUB to 6967 
-   subscribe to heartbeat (aka hello)
-   #subscribe to named channel for client
-   on first hello, send register
-
-https://gist.github.com/1393004
-"""
