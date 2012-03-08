@@ -4,7 +4,6 @@ from setuptools import setup
 version = '0.0'
 requires = [
     'pyzmq', 
-    'gservice', 
     'geventutil', 
     'pyramid', 
     #'ZMQTxn',  
