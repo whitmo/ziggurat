@@ -82,7 +82,6 @@ class ActionRegistry(dict):
         default = self.get('default')
         if default is not None:
             return default
-        raise NoActionError('default')
 
     def dispatch(self, payload):
         action = payload.get('action', 'default')
