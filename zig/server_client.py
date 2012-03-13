@@ -47,8 +47,8 @@ class RepServer(object):
         self.address = "%s:%s"  \
                               %(self.address_base,
                                 self.socket.bind_to_random_port(self.address_base,
-                                                                min_port=9152,
-                                                                max_port=65536,
+                                                                min_port=19190,
+                                                                max_port=19199,
                                                                 max_tries=1000))
         return self.address
 
@@ -103,13 +103,19 @@ class endpoint(object):
     def _recv_reply(self, sock):
         return sock.recv()
 
+    def _send(self, sock, payload):
+        sock.send(payload)
+
     def request(self, payload, timeout=None):
         client = self.ctx.req()
         with closing(client):
-            client.connect(self.address.replace('*', '0.0.0.0'))
             client.linger = 0
+            client.connect(self.address.replace('*', '0.0.0.0'))
+
             self.poll.register(client)
             timeout = timeout or self.timeout
+
+            self._send(client, payload)
             socks = dict(self.poll.poll(timeout))
             if socks.get(client) == zmq.POLLIN:
                 reply = self._recv_reply(client)
@@ -123,6 +129,10 @@ class json_endpoint(endpoint):
     #@@ add validation ??
     def _recv_reply(self, sock):
         return sock.recv_json()    
+
+    def _send(self, sock, payload):
+        sock.send_json(payload)
+
 
 
 def try_request(ctx, endpoint, request, timeout=3*1000):

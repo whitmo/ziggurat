@@ -1,12 +1,13 @@
 from .interfaces import IActionRegistry
 from .interfaces import IReceptionRegistry
+from contextlib import contextmanager
 from functools import partial
 from pyramid.decorator import reify
 from zope.interface import implementer
-
+import sys
 import logging
 import venusian
-
+import traceback as tb
 
 logger = logging.getLogger(__name__)
 
@@ -38,48 +39,36 @@ class NoActionError(ValueError):
     """
     No action found for the payload
     """
-
-
-class ErrorHandler(object):
-    """
-    A generic context manager for handling exits
-    #@@ add 
-    """
-    def __init__(self, actions, send, payload):
-        self.actions = actions
-        self.send = send
-        self.payload = payload
-
-    def __enter__(self):
-        logger.debug(self.payload)
-
-    def handle_error(self, exc_type, exc_val, exc_tb):
-        if self.actions.verbose > 1:
-            logger.exception('BOOM')
-        elif exc_val and self.actions.verbose == 1:
-            logger.error()
-        self.send(dict(status='fail', error=(repr(exc_type), repr(exc_val)), payload=self.payload))
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.actions.postmortem and exc_val:
-            import pdb; pdb.post_mortem(exc_tb)
-        if exc_val:
-            self.handle_error(exc_type, exc_val, exc_tb)
-
-
-
         
 
 @implementer(IActionRegistry)
 class ActionRegistry(dict):
     """
+    hot action
     """
     verbose = 2
-    postmortem = True
-    error_handler_class = ErrorHandler
-    def __init__(self, registry, **kw):
+    def __init__(self, registry, postmortem=False, **kw):
         super(ActionRegistry, self).__init__(**kw) 
         self.registry = registry
+        self.postmortem = postmortem
+
+    def handle_error(self, send, payload, (exc_type, exc_val, exc_tb)):
+        if self.verbose > 1:
+            logger.exception('BOOM')
+        elif self.verbose == 1:
+            logger.error()
+            
+        send(dict(status='fail', tb=tb.format_tb(exc_tb), error=(repr(exc_type), repr(exc_val))))
+
+    @contextmanager
+    def error_catcher(self, send, payload,  pm=False):
+        try:
+            yield
+        except :
+            exc_type, exc_val, exc_tb = sys.exc_info()
+            if pm:
+                import pdb; pdb.post_mortem(exc_tb)
+            self.handle_error(send, payload, (exc_type, exc_val, exc_tb))        
 
     def register(self, name, callable_):
         if name in self:
@@ -87,11 +76,6 @@ class ActionRegistry(dict):
         self[name] = callable_
 
     # divide into 'default' & 'not found'
-
-    @reify
-    def error_handler(self):
-        return partial(self.error_handler_class, self)
-        
 
     @reify
     def default(self):
@@ -110,8 +94,8 @@ class ActionRegistry(dict):
         return out
 
     def __call__(self, send, payload):
-        import pdb;pdb.set_trace()
-        with self.error_handler(send, payload):
+        out = None
+        with self.error_catcher(send, payload, pm=self.postmortem):
             out = self.dispatch(payload)
             send(out)
         return out
