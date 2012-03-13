@@ -9,8 +9,10 @@ class sock(object):
     def __init__(self, desc):
         self.desc = desc
 
-    def make_sock(self, ctx=None, bind=None, connect=None, id=None):
+    def make_sock(self, ctx=None, bind=None, connect=None, id=None, linger=None):
         sock = ctx.socket(self.desc)
+        if not linger is None:
+            sock.linger = linger
         if not id is None:
             sock.indentity = id
         assert not all((bind, connect)), ValueError("Cannot connect *and* bind")

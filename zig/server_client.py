@@ -11,13 +11,14 @@ class RepServer(object):
     aka Papa
     """
     wait = 0.1
-    def __init__(self, handler, address=None, address_base='tcp://*', context=None, serializer=None, bind=True, identity=None):
+    def __init__(self, handler, address=None, address_base='tcp://*',
+                 context=None, serializer=None, bind=True, identity=None):
         self.context = context or zig.Context()
         self.handler = handler
         self.address = address
         self.address_base = address_base
         self.greenlet = None
-        self.socket = self.context.socket(zmq.REP)
+        self.socket = self.context.rep()
 
         if not identity is None:
             self.socket.identity = identity
@@ -31,8 +32,8 @@ class RepServer(object):
         self.recv = self.socket.recv
         self.send = self.socket.send
         if not serializer is None:
-            self.recv = getattr(self.socket, "recv_" %serializer)
-            self.send = getattr(self.socket, "send_" %serializer)
+            self.recv = getattr(self.socket, "recv_%s" %serializer)
+            self.send = getattr(self.socket, "send_%s" %serializer)
 
     @property
     def identity(self):
@@ -42,7 +43,7 @@ class RepServer(object):
         if not self.address is None:
             self.socket.bind(self.address)
             return self.address
-        
+
         self.address = "%s:%s"  \
                               %(self.address_base,
                                 self.socket.bind_to_random_port(self.address_base,
@@ -94,7 +95,7 @@ class endpoint(object):
     `requests` on a remote address
     """
     def __init__(self, address, ctx=None, timeout=3*1000):
-        ctx = self.context = ctx or zig.CTX()
+        self.ctx = self.context = ctx or zig.CTX()
         self.address = address
         self.timeout = timeout
         self.poll = zmq.Poller()
@@ -103,10 +104,10 @@ class endpoint(object):
         return sock.recv()
 
     def request(self, payload, timeout=None):
-        client = self.req()
+        client = self.ctx.req()
         with closing(client):
+            client.connect(self.address.replace('*', '0.0.0.0'))
             client.linger = 0
-            client.connect(self.address)
             self.poll.register(client)
             timeout = timeout or self.timeout
             socks = dict(self.poll.poll(timeout))
