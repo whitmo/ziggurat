@@ -134,27 +134,6 @@ class json_endpoint(endpoint):
         sock.send_json(payload)
 
 
-
-def try_request(ctx, endpoint, request, timeout=3*1000):
-    """
-    from zguide
-    """
-    client = ctx.req()
-    client.setsockopt(zmq.LINGER, 0)  # Terminate early
-    client.connect(endpoint)
-    client.send(request)
-    poll = zmq.Poller()
-    poll.register(client, zmq.POLLIN)
-    socks = dict(poll.poll(timeout))
-    if socks.get(client) == zmq.POLLIN:
-        reply = client.recv_multipart()
-    else:
-        reply = None
-    poll.unregister(client)
-    client.close()
-    return reply
-
-
 def spawn_queue(front, back):
     tp = ThreadPool(1)
     result_obj = tp.spawn(zmq.device, zmq.QUEUE, front, back)
