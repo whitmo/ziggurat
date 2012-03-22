@@ -29,5 +29,6 @@ setup(name='ziggurat',
       gpds=zig.service:GPasteDeployService
       [console_scripts]
       gpserve = zig.greenpserve:gpserve
+      gpsrv = zig.greenpserve:gpserve
       """,
       )
